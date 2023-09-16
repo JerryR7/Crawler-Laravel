@@ -1,0 +1,48 @@
+version: "3"
+services:
+  nginx:
+    restart: unless-stopped
+    image: nginx:latest
+    container_name: nginx
+    networks:
+      - phpnet
+    ports:
+      - 80:80
+      - 443:443
+  mariadb:
+    image: mariadb:10.6
+    container_name: mariadb
+    ports:
+    - "3306:3306"
+    networks:
+      - phpnet
+#    volumes:
+#      - ./.data:/var/lib/mysql
+    restart: always
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - MARIADB_USER=laravel
+      - MARIADB_PASSWORD=laravel
+      - MARIADB_DATABASE=laravel
+      - MARIADB_ROOT_PASSWORD=laravel
+      - TZ=Asia/Taipei
+
+  laravel:
+    image: docker.io/bitnami/laravel:10
+    ports:
+      - '8000:8000'
+    environment:
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_USERNAME=laravel
+      - DB_DATABASE=laravel
+    volumes:
+      - './Crawler:/app'
+    depends_on:
+      - mariadb
+    networks:
+      - phpnet
+
+networks:
+  phpnet:
+    # external: true
