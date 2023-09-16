@@ -37,7 +37,7 @@ This is a simple web crawler demonstration project developed using the Laravel f
 2. Navigate to the project directory:
 
    ```bash
-   cd php-web-crawler
+   cd Crawler
    ```
 
 3. Install PHP dependencies:
@@ -81,10 +81,10 @@ This is a simple web crawler demonstration project developed using the Laravel f
    npm install
    ```
 
-8. Compile frontend assets:
+8. Create the symbolic link:
 
    ```bash
-   npm run dev
+   php artisan storage:link
    ```
 
 9. Start the local development server:
