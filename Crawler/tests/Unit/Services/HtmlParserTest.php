@@ -24,9 +24,10 @@ class HtmlParserTest extends TestCase
     public function testInitDOMDocumentMethodShouldReturnDOMDocumentInstance()
     {
         $htmlParser = new HtmlParser();
-        $result = $htmlParser->loadHtmlContent($this->htmlContent);
+        $htmlParser->loadHtmlContent($this->htmlContent);
+        $xpath = $htmlParser->getXPath();
 
-        $this->assertInstanceOf(DOMDocument::class, $result);
+        $this->assertInstanceOf(DOMXPath::class, $xpath);
     }
 
     public function testGetXPathMethodShouldReturnDOMXPathInstance()

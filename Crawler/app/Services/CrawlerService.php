@@ -13,7 +13,7 @@ class CrawlerService
 
     private WebCrawlerInterface $webCrawler;
     private HtmlParserInterface $htmlParser;
-    private HtmlToXmlConverter $htmlToXmlConverter;
+    private HtmlToXmlConverterInterface $htmlToXmlConverter;
 
     public function __construct(WebCrawlerInterface $webCrawler, HtmlParserInterface $htmlParser, HtmlToXmlConverterInterface $htmlToXmlConverter)
     {
