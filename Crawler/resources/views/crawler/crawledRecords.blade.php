@@ -1,15 +1,3 @@
-{{--@extends('layouts.app')--}}
-
-{{--@section('content')--}}
-{{--    <div class="mt-4 mb-5">--}}
-{{--        <div>--}}
-{{--            @foreach ($crawledRecords as $crawledRecord)--}}
-{{--                @include('crawler.result', ['crawledResult' => $crawledRecord])--}}
-{{--            @endforeach--}}
-{{--        </div>--}}
-{{--    </div>--}}
-{{--@endsection--}}
-
 @extends('layouts.app')
 
 @section('content')
@@ -56,19 +44,11 @@
                 <div class="container mt-5 col-2">
                     <div class="justify-content-center pagination">
                         {{ $crawledRecords->links() }}
-
                     </div>
                 </div>
-
             </div>
         </main>
     </div>
     {{--    @include('crawler.detail')--}}
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
-            crossorigin="anonymous"></script>
-    <script src="js/scripts.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
-            crossorigin="anonymous"></script>
-    <script src="js/datatables-simple-demo.js"></script>
 @endsection
