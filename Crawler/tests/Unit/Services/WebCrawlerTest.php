@@ -3,7 +3,6 @@
 namespace Tests\Unit\Services;
 
 use App\Services\WebCrawler;
-use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,6 +13,23 @@ class WebCrawlerTest extends TestCase
 {
     use RefreshDatabase;
 
+    private $crawler;
+    private $mockClient;
+    private $url;
+    private $expectedPath;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->crawler = new WebCrawler();
+        $this->url = 'https://example.com';
+        $this->expectedPath = 'screenshots/' . base64_encode($this->url) . '.png';
+
+        $this->mockClient = $this->createMock(Client::class);
+        $this->crawler->setHttpClient($this->mockClient);
+    }
+
     public function tearDown(): void
     {
         parent::tearDown();
@@ -23,82 +39,58 @@ class WebCrawlerTest extends TestCase
 
     public function testCrawlPageMethodShouldReturnContent()
     {
-        $crawler = new WebCrawler();
-
-        $url = 'https://example.com';
-
-        $mockClient = $this->createMock(Client::class);
-        $mockClient->expects($this->once())
+        $this->mockClient->expects($this->once())
             ->method('request')
-            ->with('GET', $url)
+            ->with('GET', $this->url)
             ->willReturn(new Response(200, [], 'Mocked HTML Content'));
 
-        $crawler->setHttpClient($mockClient);
-
-        $content = $crawler->crawlPage($url);
+        $content = $this->crawler->crawlPage($this->url);
 
         $this->assertEquals('Mocked HTML Content', $content);
     }
 
     public function testCrawlPageThrowsExceptionOnHttpError()
     {
-        $crawler = new WebCrawler();
-
-        $url = 'https://example.com';
-
-        $mockClient = $this->createMock(Client::class);
-        $mockClient->expects($this->once())
+        $this->mockClient->expects($this->once())
             ->method('request')
-            ->with('GET', $url)
+            ->with('GET', $this->url)
             ->willReturn(new Response(404, [], 'Not Found'));
 
-        $crawler->setHttpClient($mockClient);
-
-        $this->expectException(Exception::class);
+        $this->expectException(\Exception::class);
         $this->expectExceptionMessage('HTTP Error: 404');
 
-        $content = $crawler->crawlPage($url);
-        $this->assertEquals('Not Found', $content);
+        $content = $this->crawler->crawlPage($this->url);
+
+        $this->assertEquals('HTTP Error: 404', $content);
     }
 
     public function testCrawlPageThrowsExceptionOnRequestError()
     {
-        $crawler = new WebCrawler();
-
-        $url = 'https://example.com';
-
-        $mockClient = $this->createMock(Client::class);
-        $mockClient->expects($this->once())
+        $this->mockClient->expects($this->once())
             ->method('request')
-            ->with('GET', $url)
-            ->willThrowException(new Exception('Request Failed'));
+            ->with('GET', $this->url)
+            ->willThrowException(new \Exception('Request Failed'));
 
-        // 將 Mocked Client 注入到 WebCrawler 實例中
-        $crawler->setHttpClient($mockClient);
-
-        // 預期應該拋出 Exception
-        $this->expectException(Exception::class);
+        $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Request Error: Request Failed');
 
-        // 呼叫 crawlPage 方法
-        $crawler->crawlPage($url);
+        $content = $this->crawler->crawlPage($this->url);
+
+        $this->assertEquals('Request Error: Request Failed', $content);
     }
 
     public function testCrawlScreenshotMethodShouldReturnScreenshotPath()
     {
-        $browsershotMock = $this->createMock(Browsershot::class);
+        $this->instance(Browsershot::class, function () {
+            $browsershotMock = $this->createMock(Browsershot::class);
+            $browsershotMock->expects($this->once())
+                ->method('save')
+                ->willReturn($this->expectedPath);
+            return $browsershotMock;
+        });
 
-        $browsershotMock->willReturnCallback(function ($url) {
-                return 'screenshots/' . base64_encode($url) . '.png';
-            });
+        $screenshotPath = $this->crawler->crawlScreenshot($this->url);
 
-        $this->app->instance(Browsershot::class, $browsershotMock);
-
-        $crawler = app(WebCrawler::class);
-
-        $url = 'https://example.com';
-        $screenshotPath = $crawler->crawlScreenshot($url);
-
-        $this->assertEquals('screenshots/' . base64_encode($url) . '.png', $screenshotPath);
+        $this->assertEquals($this->expectedPath, $screenshotPath);
     }
 }
