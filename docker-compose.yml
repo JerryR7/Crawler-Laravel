@@ -9,8 +9,9 @@ services:
     ports:
       - 80:80
       - 443:443
+
   mariadb:
-    image: mariadb:10.6
+    image: mariadb:latest
     container_name: mariadb
     ports:
     - "3306:3306"
@@ -18,7 +19,7 @@ services:
       - phpnet
 #    volumes:
 #      - ./.data:/var/lib/mysql
-    restart: always
+    restart: unless-stopped
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
       - MARIADB_USER=laravel
@@ -29,19 +30,34 @@ services:
 
   laravel:
     image: docker.io/bitnami/laravel:10
+    container_name: crawler-laravel
     ports:
       - '8000:8000'
     environment:
       - DB_HOST=mariadb
       - DB_PORT=3306
-      - DB_USERNAME=laravel
       - DB_DATABASE=laravel
+      - DB_USERNAME=laravel
+      - DB_PASSWORD=laravel
     volumes:
       - './Crawler:/app'
     depends_on:
       - mariadb
     networks:
       - phpnet
+    restart: unless-stopped
+
+  chromium:
+    image: microbox/chromium-headless
+    container_name: chromium
+    ports:
+      - '9222:9222'
+    volumes:
+      - /dev/shm:/dev/shm
+    command: ["chromium-browser", "--headless", "--disable-gpu", "--remote-debugging-address=127.0.0.1", "--remote-debugging-port=9222", "--no-sandbox"]
+    networks:
+      - phpnet
+    restart: unless-stopped
 
 networks:
   phpnet:

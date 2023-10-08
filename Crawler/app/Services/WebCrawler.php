@@ -41,6 +41,10 @@ class WebCrawler implements WebCrawlerInterface
         $screenshotPath = 'screenshots/' . base64_encode($url) . '.png';
         $screenshotStorePath = public_path($screenshotPath);
 
+        if (!is_dir(public_path('screenshots'))) {
+            mkdir(public_path('screenshots'));
+        }
+
         try {
             Browsershot::url($url)
                 ->noSandbox()
